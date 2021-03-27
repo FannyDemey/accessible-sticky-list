@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.techethic.a11ysticky.model.MovieListItem.Movie
 
 class MainViewModel : ViewModel() {
-    private val movies = listOf(
+    val movies = listOf(
             Movie("Titanic", 3),
             Movie("Lost in translation", 1),
             Movie("Home alone", 4),
@@ -21,8 +21,6 @@ class MainViewModel : ViewModel() {
             Movie("Harry Potter", 5),
             Movie("The Pianist", 3),
             Movie("Sherlock Holmes", 4)
-
     )
 
-    val movieList = movies.sortedByDescending { it.rate }
 }

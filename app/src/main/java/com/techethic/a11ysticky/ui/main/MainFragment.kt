@@ -32,17 +32,17 @@ class MainFragment : Fragment() {
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         binding.list.apply {
             val screenHeight = resources.displayMetrics.heightPixels - binding.stickyHeader.minimumHeight
-            adapter = MovieAdapter(viewModel.movieList, screenHeight)
+            adapter = MovieAdapter(viewModel.movies, screenHeight)
             addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     super.onScrolled(recyclerView, dx, dy)
-                    checkFirstItemAndUpdateSticky()
+                    checkFirstVisibleItemAndUpdateSticky()
                 }
             })
         }
     }
 
-    private fun RecyclerView.checkFirstItemAndUpdateSticky() {
+    private fun RecyclerView.checkFirstVisibleItemAndUpdateSticky() {
         (adapter as? MovieAdapter)?.let { movieAdapter ->
             val firstPosition = (layoutManager as? LinearLayoutManager)?.findFirstVisibleItemPosition()
             if (firstPosition != null) {
