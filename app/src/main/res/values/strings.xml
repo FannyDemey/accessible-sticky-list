@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Accessible Sticky list</string>
+    <string name="the_following_items_have_a_rate_of">The following items have a rate of %1s</string>
+</resources>
