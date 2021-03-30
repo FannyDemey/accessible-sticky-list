@@ -1,7 +1,7 @@
 package com.techethic.a11ysticky.ui.main
 
 import androidx.lifecycle.ViewModel
-import com.techethic.a11ysticky.model.MovieListItem.Movie
+import com.techethic.a11ysticky.model.Movie
 
 class MainViewModel : ViewModel() {
     val movies = listOf(
@@ -21,6 +21,6 @@ class MainViewModel : ViewModel() {
             Movie("Harry Potter", 5),
             Movie("The Pianist", 3),
             Movie("Sherlock Holmes", 4)
-    )
+    ).sortedByDescending { it.rate }
 
 }
