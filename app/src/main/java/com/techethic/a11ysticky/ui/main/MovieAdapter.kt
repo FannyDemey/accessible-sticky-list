@@ -1,5 +1,6 @@
 package com.techethic.a11ysticky.ui.main
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.doOnNextLayout
@@ -25,6 +26,7 @@ class MovieAdapter(
     }
 
     override fun onBindViewHolder(holder: MovieViewHolder, position: Int) {
+        Log.d("Fanny", "movie position onBindMovieViewHolder $position")
         holder.bind(data[position])
     }
 
@@ -46,7 +48,7 @@ class MovieAdapter(
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
         recyclerView.clipToPadding = false
-        recyclerView.doOnNextLayout { recyclerView.updatePadding(bottom = recyclerView.height) }
+        recyclerView.doOnNextLayout { recyclerView.updatePadding(bottom = recyclerView.height)}
     }
 
 }

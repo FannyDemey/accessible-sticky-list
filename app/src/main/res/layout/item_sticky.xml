@@ -4,14 +4,18 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:importantForAccessibility="yes"
+    android:focusable="true">
     <TextView
         android:id="@+id/stickyRateText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:text="Rate"
         android:padding="8dp"
-        android:textColor="@color/purple_500"/>
+        android:textColor="@color/purple_500"
+        android:background="@color/white"
+        android:focusable="false"/>
     <View
         android:layout_width="match_parent"
         android:layout_height="2dp"

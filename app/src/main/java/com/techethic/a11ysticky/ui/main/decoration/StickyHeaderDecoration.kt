@@ -3,13 +3,19 @@ package com.techethic.a11ysticky.ui.main.decoration
 
 import android.graphics.Canvas
 import android.graphics.Rect
+import android.os.Build
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.collection.LongSparseArray
+import androidx.core.view.ViewCompat
 import androidx.core.view.children
-import androidx.core.view.isVisible
+import androidx.core.view.get
 import androidx.recyclerview.widget.RecyclerView
+import com.techethic.a11ysticky.R
 
 
 class StickyHeaderDecoration<T : RecyclerView.ViewHolder>(
@@ -44,7 +50,14 @@ class StickyHeaderDecoration<T : RecyclerView.ViewHolder>(
                 val top = getHeaderTop(parent, child, header, adapterPos, layoutPos)
                 if (header.parent == null) {
                     frameLayout.addView(header)
+                     setAccessibilityTraversalForHeader(parent, header, layoutPos)
+                } else {
+                    val recycled = attachedViews.get(adapter.getHeaderId(adapterPos), viewPool.getRecycledView(0) as? T)
+                    if (recycled != null && (header.accessibilityTraversalBefore == -1 || header.accessibilityTraversalAfter == -1)) {
+                        setAccessibilityTraversalForHeader(parent, header, layoutPos)
+                    }
                 }
+                Log.d("Fanny","header pos : $adapterPos for header ${adapter.getHeaderId(adapterPos)}")
                 header.translationY = top.toFloat()
                 header.translationX = left.toFloat()
                 newlyAttached.add(header)
@@ -54,9 +67,16 @@ class StickyHeaderDecoration<T : RecyclerView.ViewHolder>(
         frameLayout.children.forEach {
             if (it !is RecyclerView && it !in newlyAttached) {
                 val holder = it.tag as T
-                attachedViews.removeAt(attachedViews.indexOfValue(holder))
-                viewPool.putRecycledView(holder)
-                frameLayout.removeView(it)
+                val index = attachedViews.indexOfValue(holder)
+                if (index != -1) {
+                    attachedViews.removeAt(index)
+                    viewPool.putRecycledView(holder)
+                    frameLayout.post {
+                        if(it.parent !=null){
+                            frameLayout.removeView(it)
+                        }
+                    }
+                }
             }
         }
     }
@@ -72,6 +92,7 @@ class StickyHeaderDecoration<T : RecyclerView.ViewHolder>(
         if (recycled != null) {
             return recycled
         }
+
         val holder = adapter.onCreateHeaderViewHolder(parent)
         val header: View = holder.itemView
         val widthSpec =
@@ -88,6 +109,7 @@ class StickyHeaderDecoration<T : RecyclerView.ViewHolder>(
         header.measure(childWidth, childHeight)
         header.layout(0, 0, header.measuredWidth, header.measuredHeight)
         header.tag = holder
+        header.id = ViewCompat.generateViewId()
         return holder
     }
     private fun getHeaderTop(
@@ -123,6 +145,25 @@ class StickyHeaderDecoration<T : RecyclerView.ViewHolder>(
         }
         return top.coerceAtLeast(0)
     }
+
+    private fun setAccessibilityTraversalForHeader(parent: RecyclerView, header: View, adapterPos : Int){
+        if(adapterPos > 0){
+            val movieBeforeInRecycler = parent.getChildAt(adapterPos - 1)
+            movieBeforeInRecycler?.let {
+                //  Log.d("Fanny","id before ${movieBeforeInRecycler.id} ${movieBeforeInRecycler.findViewById<TextView>(R.id.movieTitle).text}")
+                Log.d("Fanny","movieBefore : $movieBeforeInRecycler.id")
+                header.accessibilityTraversalAfter = movieBeforeInRecycler.id
+            }
+
+        }
+        val movieAfterInRecycler = parent.getChildAt(adapterPos)
+        movieAfterInRecycler?.let {
+            //   Log.d("Fanny","id after ${movieAfterInRecycler.id} ${movieAfterInRecycler.findViewById<TextView>(R.id.movieTitle).text}")
+            header.accessibilityTraversalBefore = movieAfterInRecycler.id
+        }
+    }
+
+
     interface Adapter<T : RecyclerView.ViewHolder> {
         fun getItemCount(): Int
         fun getHeaderId(adapterPos: Int): Long
