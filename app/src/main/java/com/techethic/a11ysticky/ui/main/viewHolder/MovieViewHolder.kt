@@ -14,9 +14,6 @@ class MovieViewHolder(private val itemBinding: ItemMovieBinding) : RecyclerView.
             movieTitle.text = movie.title
             movieRate.text = movie.rate.toString()
         }
-        itemView.setOnClickListener {
-            Log.d("Fanny","touch item ${itemView.id}")
-        }
         Log.d("Fanny","Movie  ${itemView.id} $movie")
 
     }

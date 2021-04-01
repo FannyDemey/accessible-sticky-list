@@ -3,19 +3,14 @@ package com.techethic.a11ysticky.ui.main.decoration
 
 import android.graphics.Canvas
 import android.graphics.Rect
-import android.os.Build
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.TextView
-import androidx.annotation.RequiresApi
 import androidx.collection.LongSparseArray
 import androidx.core.view.ViewCompat
 import androidx.core.view.children
-import androidx.core.view.get
 import androidx.recyclerview.widget.RecyclerView
-import com.techethic.a11ysticky.R
 
 
 class StickyHeaderDecoration<T : RecyclerView.ViewHolder>(
@@ -23,7 +18,7 @@ class StickyHeaderDecoration<T : RecyclerView.ViewHolder>(
         private val frameLayout: FrameLayout,
 ) : RecyclerView.ItemDecoration() {
     private val viewPool = RecyclerView.RecycledViewPool()
-    private val attachedViews = LongSparseArray<T>()
+    private val attachedHeaderViews = LongSparseArray<T>()
     override fun getItemOffsets(
             outRect: Rect,
             view: View,
@@ -52,24 +47,30 @@ class StickyHeaderDecoration<T : RecyclerView.ViewHolder>(
                     frameLayout.addView(header)
                      setAccessibilityTraversalForHeader(parent, header, layoutPos)
                 } else {
-                    val recycled = attachedViews.get(adapter.getHeaderId(adapterPos), viewPool.getRecycledView(0) as? T)
-                    if (recycled != null && (header.accessibilityTraversalBefore == -1 || header.accessibilityTraversalAfter == -1)) {
+                    val beforeId = header.accessibilityTraversalBefore
+                    val afterId = header.accessibilityTraversalAfter
+                    if ((beforeId == -1 ||
+                                afterId == -1 ||
+                                adapter.viewHasBeenRecycled(beforeId) ||
+                                adapter.viewHasBeenRecycled(afterId)
+                                )) {
+                        //view is still attached but traversal order is not fully completed
                         setAccessibilityTraversalForHeader(parent, header, layoutPos)
                     }
+
                 }
-                Log.d("Fanny","header pos : $adapterPos for header ${adapter.getHeaderId(adapterPos)}")
                 header.translationY = top.toFloat()
                 header.translationX = left.toFloat()
                 newlyAttached.add(header)
-                attachedViews.append(adapter.getHeaderId(adapterPos), holder)
+                attachedHeaderViews.append(adapter.getHeaderId(adapterPos), holder)
             }
         }
         frameLayout.children.forEach {
             if (it !is RecyclerView && it !in newlyAttached) {
                 val holder = it.tag as T
-                val index = attachedViews.indexOfValue(holder)
+                val index = attachedHeaderViews.indexOfValue(holder)
                 if (index != -1) {
-                    attachedViews.removeAt(index)
+                    attachedHeaderViews.removeAt(index)
                     viewPool.putRecycledView(holder)
                     frameLayout.post {
                         if(it.parent !=null){
@@ -88,7 +89,7 @@ class StickyHeaderDecoration<T : RecyclerView.ViewHolder>(
         return headerId != RecyclerView.NO_ID && (headerId != adapter.getHeaderId(position - 1))
     }
     private fun getHeader(parent: RecyclerView, position: Int): T {
-        val recycled = attachedViews.get(adapter.getHeaderId(position), viewPool.getRecycledView(0) as? T)
+        val recycled = attachedHeaderViews.get(adapter.getHeaderId(position), viewPool.getRecycledView(0) as? T)
         if (recycled != null) {
             return recycled
         }
@@ -164,10 +165,12 @@ class StickyHeaderDecoration<T : RecyclerView.ViewHolder>(
     }
 
 
+
     interface Adapter<T : RecyclerView.ViewHolder> {
         fun getItemCount(): Int
         fun getHeaderId(adapterPos: Int): Long
         fun onBindHeaderViewHolder(holder: T, position: Int)
         fun onCreateHeaderViewHolder(parent: RecyclerView): T
+        fun viewHasBeenRecycled(viewId : Int) : Boolean
     }
 }

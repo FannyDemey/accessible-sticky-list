@@ -19,6 +19,7 @@ class MovieAdapter(
 ) : RecyclerView.Adapter<MovieViewHolder>(),
     StickyHeaderDecoration.Adapter<HeaderViewHolder> {
 
+    private val attachedViewIds = mutableListOf<Int>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MovieViewHolder {
         val itemBinding = ItemMovieBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -28,6 +29,8 @@ class MovieAdapter(
     override fun onBindViewHolder(holder: MovieViewHolder, position: Int) {
         Log.d("Fanny", "movie position onBindMovieViewHolder $position")
         holder.bind(data[position])
+        attachedViewIds.add(holder.itemView.id)
+
     }
 
 
@@ -36,6 +39,7 @@ class MovieAdapter(
 
     override fun onBindHeaderViewHolder(holder: HeaderViewHolder, position: Int) {
         holder.bind(getMovieRate(position))
+        attachedViewIds.add(holder.itemView.id)
     }
 
     override fun onCreateHeaderViewHolder(parent: RecyclerView) =
@@ -49,6 +53,16 @@ class MovieAdapter(
         super.onAttachedToRecyclerView(recyclerView)
         recyclerView.clipToPadding = false
         recyclerView.doOnNextLayout { recyclerView.updatePadding(bottom = recyclerView.height)}
+    }
+
+    override fun onViewRecycled(holder: MovieViewHolder) {
+        super.onViewRecycled(holder)
+        val viewId = holder.itemView.id
+        attachedViewIds.remove(viewId)
+    }
+
+    override fun viewHasBeenRecycled(viewId : Int) : Boolean {
+        return attachedViewIds.contains(viewId)
     }
 
 }
